@@ -1,7 +1,7 @@
 import type { AgentJob } from "../lib/types";
 import { logEvent } from "../lib/store";
 
-const baseUrl = process.env.SEEDSTR_BASE_URL ?? "https://seedstr.ai/api";
+const baseUrl = process.env.SEEDSTR_BASE_URL ?? process.env.SEEDSTR_API_URL ?? "https://www.seedstr.io/api/v2";
 
 export async function registerAgent() {
   const apiKey = process.env.SEEDSTR_API_KEY;
