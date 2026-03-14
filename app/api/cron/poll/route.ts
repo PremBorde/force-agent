@@ -14,9 +14,9 @@ export async function GET(req: Request) {
   await registerAgent();
   const jobs = await pollJobs();
   for (const job of jobs) {
-    addJob(job);
-    updatePipelineStage("Job Received", "active");
-    logEvent("job received", { jobId: job.id });
+    await addJob(job);
+    await updatePipelineStage("Job Received", "active");
+    await logEvent("job received", { jobId: job.id });
     await handleJob(job);
   }
   return NextResponse.json({ ok: true, processed: jobs.length });

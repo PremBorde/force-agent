@@ -14,14 +14,14 @@ export function startPolling(handler: (job: AgentJob) => Promise<void>) {
       const jobs = await pollJobs();
       if (jobs.length) {
         for (const job of jobs) {
-          addJob(job);
-          updatePipelineStage("Job Received", "active");
-          logEvent("job received", { jobId: job.id });
+          await addJob(job);
+          await updatePipelineStage("Job Received", "active");
+          await logEvent("job received", { jobId: job.id });
           await handler(job);
         }
       }
     } catch (err) {
-      logEvent("polling error", { error: String(err) });
+      await logEvent("polling error", { error: String(err) });
     }
   };
 

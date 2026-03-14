@@ -16,10 +16,11 @@
     "show-keys": "tsx scripts/show-keys.ts"
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
     "archiver": "^6.0.2",
+    "chalk": "^5.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "conf": "^12.0.0",
     "dotenv": "^16.4.5",
@@ -34,11 +35,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^20.14.9",
     "@types/archiver": "^6.0.2",
+    "@types/node": "^20.14.9",
+    "@types/prompts": "^2.4.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@types/prompts": "^2.4.9",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.6",

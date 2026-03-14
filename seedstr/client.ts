@@ -7,7 +7,7 @@ export async function registerAgent() {
   const apiKey = process.env.SEEDSTR_API_KEY;
   const agentId = process.env.SEEDSTR_AGENT_ID;
   if (!apiKey || !agentId) {
-    logEvent("Seedstr credentials missing, skipping register");
+    await logEvent("Seedstr credentials missing, skipping register");
     return { ok: false, status: 401 };
   }
 
@@ -22,7 +22,7 @@ export async function registerAgent() {
     });
     return { ok: res.ok, status: res.status };
   } catch (err) {
-    logEvent("Seedstr register failed", { error: String(err) });
+    await logEvent("Seedstr register failed", { error: String(err) });
     return { ok: false, status: 500 };
   }
 }
@@ -50,7 +50,7 @@ export async function pollJobs(): Promise<AgentJob[]> {
       updatedAt: new Date().toISOString()
     }));
   } catch (err) {
-    logEvent("Seedstr poll failed", { error: String(err) });
+    await logEvent("Seedstr poll failed", { error: String(err) });
     return [];
   }
 }
@@ -73,7 +73,7 @@ export async function submitJob(jobId: string, payload: Record<string, unknown>)
     });
     return { ok: res.ok, status: res.status };
   } catch (err) {
-    logEvent("Seedstr submit failed", { error: String(err) });
+    await logEvent("Seedstr submit failed", { error: String(err) });
     return { ok: false, status: 500 };
   }
 }

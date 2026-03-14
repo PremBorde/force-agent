@@ -1,23 +1,33 @@
 import { NextResponse } from "next/server";
 import { isRunning } from "../../../lib/runtime";
+
+export const dynamic = "force-dynamic";
 import { readJobs, readPipelineState, readProjects, readStatus, readLogs } from "../../../lib/store";
 import fs from "fs";
 import path from "path";
 import { PATHS } from "../../../lib/paths";
 
 export async function GET() {
-  const projects = readProjects().filter((project) => {
-    if (project.outputDir && fs.existsSync(project.outputDir)) return true;
-    const fallback = path.join(PATHS.generatedDir, project.id);
-    return fs.existsSync(fallback);
-  });
+  const [allProjects, status, pipeline, jobs, logs] = await Promise.all([
+    readProjects(),
+    readStatus(),
+    readPipelineState(),
+    readJobs(),
+    readLogs(40)
+  ]);
+  const projects = process.env.KV_REST_API_URL
+    ? allProjects
+    : allProjects.filter((p) => {
+        if (p.outputDir && fs.existsSync(p.outputDir)) return true;
+        return fs.existsSync(path.join(PATHS.generatedDir, p.id));
+      });
 
   const response = NextResponse.json({
-    status: { ...readStatus(), running: isRunning() },
-    pipeline: readPipelineState(),
-    jobs: readJobs(),
+    status: { ...status, running: isRunning() },
+    pipeline,
+    jobs,
     projects,
-    logs: readLogs(40)
+    logs
   });
 
   response.headers.set("Cache-Control", "no-store, max-age=0");

@@ -16,7 +16,7 @@ const DEFAULT_NAME = "Forge Generated App";
 export async function generateProject(prompt: string, plan: unknown): Promise<GeneratedProject> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    logEvent("OpenRouter API key missing, using template fallback");
+    await logEvent("OpenRouter API key missing, using template fallback");
     return {
       name: DEFAULT_NAME,
       description: "Template fallback project",
@@ -55,7 +55,7 @@ export async function generateProject(prompt: string, plan: unknown): Promise<Ge
     clearTimeout(timeout);
 
     if (!response.ok) {
-      logEvent("OpenRouter response error", { status: response.status });
+      await logEvent("OpenRouter response error", { status: response.status });
       return { name: DEFAULT_NAME, description: "Template fallback project", files: [] };
     }
 
@@ -66,7 +66,7 @@ export async function generateProject(prompt: string, plan: unknown): Promise<Ge
     const content = payload.choices?.[0]?.message?.content ?? "";
     const parsed = safeParse(content);
     if (!parsed || !Array.isArray(parsed.files)) {
-      logEvent("OpenRouter response parse failed", { sample: content.slice(0, 200) });
+      await logEvent("OpenRouter response parse failed", { sample: content.slice(0, 200) });
       return { name: DEFAULT_NAME, description: "Template fallback project", files: [] };
     }
 
@@ -76,7 +76,7 @@ export async function generateProject(prompt: string, plan: unknown): Promise<Ge
       files: parsed.files
     };
   } catch (err) {
-    logEvent("OpenRouter request failed", { error: String(err) });
+    await logEvent("OpenRouter request failed", { error: String(err) });
     return { name: DEFAULT_NAME, description: "Template fallback project", files: [] };
   }
 }

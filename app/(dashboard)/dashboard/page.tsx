@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { readJobs, readStatus, readPipelineState } from "@/lib/store";
 
-export default function DashboardPage() {
-  const status = readStatus();
-  const jobs = readJobs().slice(0, 5);
-  const pipeline = readPipelineState();
+export default async function DashboardPage() {
+  const [status, allJobs, pipeline] = await Promise.all([
+    readStatus(),
+    readJobs(),
+    readPipelineState()
+  ]);
+  const jobs = allJobs.slice(0, 5);
 
   return (
     <div className="space-y-6">

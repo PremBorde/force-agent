@@ -1,8 +1,9 @@
 import { readProjects } from "../../../../lib/store";
 import ProjectCodeViewer from "../../../../components/project-code-viewer";
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
-  const project = readProjects().find((p) => p.id === params.id);
+export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
+  const projects = await readProjects();
+  const project = projects.find((p) => p.id === params.id);
 
   if (!project) {
     return (

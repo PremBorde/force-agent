@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     updatedAt: new Date().toISOString()
   };
 
-  addJob(job);
+  await addJob(job);
   await handleJob(job);
 
   return NextResponse.json({ ok: true, jobId: job.id });
