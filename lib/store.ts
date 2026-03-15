@@ -7,6 +7,7 @@ const LOG_PATH = path.join(PATHS.logsDir, "agent.log");
 const STATE_PATH = path.join(PATHS.pipelineDir, "state.json");
 const JOBS_PATH = path.join(PATHS.pipelineDir, "jobs.json");
 const PROJECTS_PATH = path.join(PATHS.projectsDir, "index.json");
+const STATUS_PATH = path.join(PATHS.pipelineDir, "status.json");
 
 const KV_PREFIX = "forge:";
 const DEFAULT_PIPELINE: PipelineState = {
@@ -39,6 +40,7 @@ export function ensureStore() {
   if (!fs.existsSync(STATE_PATH)) fs.writeFileSync(STATE_PATH, JSON.stringify(DEFAULT_PIPELINE, null, 2), "utf-8");
   if (!fs.existsSync(JOBS_PATH)) fs.writeFileSync(JOBS_PATH, "[]", "utf-8");
   if (!fs.existsSync(PROJECTS_PATH)) fs.writeFileSync(PROJECTS_PATH, "[]", "utf-8");
+  if (!fs.existsSync(STATUS_PATH)) fs.writeFileSync(STATUS_PATH, JSON.stringify({ running: false }, null, 2), "utf-8");
 }
 
 function readJsonSync<T>(filePath: string, fallback: T): T {
@@ -167,6 +169,9 @@ export async function readStatus(): Promise<AgentStatus> {
   const completed = jobs.filter((j) => j.status === "completed").length;
   const total = jobs.length;
   const successRate = total ? Math.round((completed / total) * 100) : 0;
+  const running = useKv()
+    ? !!(await (await getKv()).get<boolean>(`${KV_PREFIX}running`))
+    : readJsonSync<{ running?: boolean }>(STATUS_PATH, { running: false }).running ?? false;
   const logs = await readLogs(6);
   const recentActivity = logs.map((line) => {
     try {
@@ -176,13 +181,22 @@ export async function readStatus(): Promise<AgentStatus> {
     }
   });
   return {
-    running: false,
+    running,
     lastRun: jobs[0]?.updatedAt ?? jobs[0]?.createdAt,
     jobsReceived: total,
     jobsCompleted: completed,
     successRate,
     recentActivity
   };
+}
+
+export async function setAgentRunning(running: boolean) {
+  if (useKv()) {
+    const kv = await getKv();
+    await kv.set(`${KV_PREFIX}running`, running);
+    return;
+  }
+  writeJsonSync(STATUS_PATH, { running });
 }
 
 export async function logEvent(message: string, meta?: Record<string, unknown>) {
@@ -197,12 +211,14 @@ export async function resetStore() {
     await kv.set(`${KV_PREFIX}jobs`, "[]");
     await kv.set(`${KV_PREFIX}projects`, "[]");
     await kv.set(`${KV_PREFIX}logs`, "[]");
+    await kv.set(`${KV_PREFIX}running`, false);
     return;
   }
   ensureStore();
   fs.writeFileSync(LOG_PATH, "", "utf-8");
   fs.writeFileSync(JOBS_PATH, "[]", "utf-8");
   fs.writeFileSync(PROJECTS_PATH, "[]", "utf-8");
+  fs.writeFileSync(STATUS_PATH, JSON.stringify({ running: false }, null, 2), "utf-8");
   fs.writeFileSync(STATE_PATH, JSON.stringify(DEFAULT_PIPELINE, null, 2), "utf-8");
   if (fs.existsSync(PATHS.generatedDir)) {
     for (const entry of fs.readdirSync(PATHS.generatedDir)) {

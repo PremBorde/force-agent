@@ -23,7 +23,7 @@ export async function GET() {
       });
 
   const response = NextResponse.json({
-    status: { ...status, running: isRunning() },
+    status: { ...status, running: status.running || isRunning() },
     pipeline,
     jobs,
     projects,

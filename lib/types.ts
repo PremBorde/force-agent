@@ -38,6 +38,7 @@ export type GeneratedProject = {
   promptType: PromptType;
   fileTree: string[];
   preview: string;
+  files?: { path: string; content: string }[];
   zipPath?: string;
   outputDir?: string;
 };

@@ -1,6 +1,8 @@
 import { readProjects } from "../../../../lib/store";
 import ProjectCodeViewer from "../../../../components/project-code-viewer";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
   const projects = await readProjects();
   const project = projects.find((p) => p.id === params.id);

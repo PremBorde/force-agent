@@ -72,6 +72,7 @@ export async function handleJob(job: AgentJob) {
       promptType: interpretation.type,
       fileTree: written.fileTree,
       preview: written.preview,
+      files: finalProject.files,
       zipPath,
       outputDir: written.outputDir
     });

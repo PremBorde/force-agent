@@ -23,5 +23,9 @@ generated/
 !app/(dashboard)/projects/
 !app/(dashboard)/projects/**
 
+# Allow API project routes (serve generated project detail + zip)
+!app/api/projects/
+!app/api/projects/**
+
 # Misc
 .DS_Store
