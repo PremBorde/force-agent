@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { readJobs, readStatus, readPipelineState } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const [status, allJobs, pipeline] = await Promise.all([
     readStatus(),
