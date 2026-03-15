@@ -1,15 +1,55 @@
+ "use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { readJobs, readStatus, readPipelineState } from "@/lib/store";
+import type { AgentJob, AgentStatus, PipelineState } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+const initialStatus: AgentStatus = {
+  running: false,
+  jobsReceived: 0,
+  jobsCompleted: 0,
+  successRate: 0,
+  recentActivity: []
+};
 
-export default async function DashboardPage() {
-  const [status, allJobs, pipeline] = await Promise.all([
-    readStatus(),
-    readJobs(),
-    readPipelineState()
-  ]);
-  const jobs = allJobs.slice(0, 5);
+const initialPipeline: PipelineState = { stages: [] };
+
+export default function DashboardPage() {
+  const [status, setStatus] = useState<AgentStatus>(initialStatus);
+  const [pipeline, setPipeline] = useState<PipelineState>(initialPipeline);
+  const [jobs, setJobs] = useState<AgentJob[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/state", { cache: "no-store" });
+        const data = (await res.json()) as {
+          status: AgentStatus;
+          pipeline: PipelineState;
+          jobs: AgentJob[];
+        };
+
+        if (!active) return;
+        setStatus(data.status);
+        setPipeline(data.pipeline);
+        setJobs((data.jobs ?? []).slice(0, 5));
+      } catch {
+        // ignore dashboard polling failures
+      }
+    };
+
+    void poll();
+    const id = window.setInterval(() => {
+      void poll();
+    }, 2000);
+
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
