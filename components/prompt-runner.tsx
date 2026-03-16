@@ -9,6 +9,15 @@ export default function PromptRunner() {
   const [status, setStatus] = useState<string | null>(null);
   const router = useRouter();
 
+  const statusLabel =
+    status === "running"
+      ? "Generating…"
+      : status === "done"
+      ? "Done"
+      : status === "failed"
+      ? "Failed"
+      : status;
+
   const run = async () => {
     if (!prompt.trim()) return;
     setStatus("running");
@@ -43,8 +52,11 @@ export default function PromptRunner() {
           Run Prompt
         </Button>
         {status && (
-          <span className="text-xs uppercase tracking-[0.2em] text-ink/60">
-            {status}
+          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-ink/60">
+            {status === "running" && (
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-ink/20 border-t-ink/60" />
+            )}
+            {statusLabel}
           </span>
         )}
       </div>
