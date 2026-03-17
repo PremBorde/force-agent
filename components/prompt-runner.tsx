@@ -1,22 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
 export default function PromptRunner() {
   const [prompt, setPrompt] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [stage, setStage] = useState<string | null>(null);
   const router = useRouter();
 
   const statusLabel =
     status === "running"
-      ? "Generating…"
+      ? stage ?? "Generating…"
       : status === "done"
       ? "Done"
       : status === "failed"
       ? "Failed"
       : status;
+
+  useEffect(() => {
+    if (status !== "running") {
+      setStage(null);
+      return;
+    }
+    let active = true;
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/state", { cache: "no-store" });
+        const data = (await res.json()) as { pipeline?: { stages?: { name: string; status: string }[] } };
+        const stages = data.pipeline?.stages ?? [];
+        const activeStage = stages.find((s) => s.status === "active")?.name;
+        const lastDone = [...stages].reverse().find((s) => s.status === "done")?.name;
+        if (active) setStage(activeStage ? `${activeStage}…` : lastDone ? `${lastDone}…` : "Working…");
+      } catch {
+        // ignore
+      }
+    };
+    void poll();
+    const id = window.setInterval(() => void poll(), 1200);
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [status]);
 
   const run = async () => {
     if (!prompt.trim()) return;
